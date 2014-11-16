@@ -26,10 +26,15 @@ class Graphics:
 		self.tickTime = tickTime
 		self.maxApart = maxApart
 		self.xk = numpy.arange(8)
-		self.pk = (0.15, 0.1, 0.2, 0.1, 0.5, 0.1, 0.4, 0.2)
+		#self.pk = (0.15, 0.1, 0.15, 0.1, 0.05, 0.1, 0.15, 0.2)
+		self.pk =  (0.25,0.25,0.1,0.1,0.1,0.1,0.05,0.05)
 		self.custMoves = stats.rv_discrete(values=(self.xk, self.pk))
 		self.running = 1
-	
+		v = IntVar()
+		self.currentCreature = 0
+		Radiobutton(self.root, text="Rabbit", variable=v, value=1, command=self.__rabbitRadioButton).pack()
+		Radiobutton(self.root, text="Wolf", variable=v, value=2, command=self.__wolfRadioButton).pack()
+		
 	def start(self):
 		self.root.protocol("WM_DELETE_WINDOW", self.__onClose)
 		self.canvas.bind("<Button-1>", self.__onClick)
@@ -41,12 +46,18 @@ class Graphics:
 		self.root.destroy()
 	
 	def __onClick(self, event):
+		if self.currentCreature == 0:
+			color = "black"
+		else:
+			color = "green"
 		x1 = event.x
 		y1 = event.y
 		x2 = x1 + self.sqW
 		y2 = y1 + self.sqW
-		c = self.canvas.create_rectangle(x1, y1, x2, y2, fill="black", width=0)
-		self.creatures.append(c)
+		c = self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, width=0)
+		#self.creatures.append(c)
+		cr = Creature(self.currentCreature, c, color) 
+		self.creatures.append(cr)
 
 	def __uni(self):
 		return random.randint(0, 7)
@@ -96,14 +107,15 @@ class Graphics:
 
 	def __move(self):
 		for c in self.creatures:
+			co = c.graphicsObj
 			rm = self.__randMove()
 			spm = self.__giveSpeed(rm)
-			adj = self.__adjust(c, spm)
-			self.canvas.move(c, adj[0], adj[1])
+			adj = self.__adjust(co, spm)
+			self.canvas.move(co, adj[0], adj[1])
 
 	def __close(self, i,j):
-		ci = self.canvas.coords(self.creatures[i])
-		cj = self.canvas.coords(self.creatures[j])
+		ci = self.canvas.coords(self.creatures[i].graphicsObj)
+		cj = self.canvas.coords(self.creatures[j].graphicsObj)
 		cix = ci[0]
 		ciy = ci[1]
 		cjx = cj[0]
@@ -127,9 +139,9 @@ class Graphics:
 		
 		for i in xrange(0,n):
 			if neighbours[i]:
-				self.canvas.itemconfig(self.creatures[i], fill="red")	
+				self.canvas.itemconfig(self.creatures[i].graphicsObj, fill="red")	
 			else:
-				self.canvas.itemconfig(self.creatures[i], fill="black")	
+				self.canvas.itemconfig(self.creatures[i].graphicsObj, fill=self.creatures[i].color)	
 
 	def __tick(self):
 		while self.running:
@@ -137,12 +149,22 @@ class Graphics:
 			self.__collisions()
 			self.canvas.update()
 			time.sleep(self.tickTime)
+	def __rabbitRadioButton(self):
+		self.currentCreature = 0
+	def __wolfRadioButton(self):
+		self.currentCreature = 1
+
+class Creature:
+	def __init__(self, creatureType, graphicsObj, color):
+		self.creatureType = creatureType
+		self.graphicsObj = graphicsObj
+		self.color = color
 
 def main():
 	# Construct Graphics with custom parameters like:
     # 	Graphics(speed=10, maxapart=20)	
 
-	g = Graphics()
+	g = Graphics(speed=2, tickTime = 0.01)
 	g.start()
 
 if __name__ == "__main__":
