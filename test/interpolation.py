@@ -5,14 +5,34 @@ from numpy import linspace
 from scipy import *
 from scipy.interpolate import UnivariateSpline 
 
+# window dimensions
 winHeight = 500 
 winWidth  = 500
-tick = 0.01
+
+# tk and canvas object
 root = Tk()
 canvas = Canvas(root, width=winWidth, height=winHeight, highlightthickness=0)
+
+# number of seconds per refresh
+tick = 0.01
+
+# square/circle width/diameter (h - half)
 sqw = 6
 sqhw = sqw/2
+
+# number of points generated  between
+# first and last sample point in an iteration
 grain = 1000
+
+# number of random points sampled per iteration
+nsamples = 10
+
+# starting coordinate
+initX = 30
+initY = 30
+
+# smoothing factor
+sfact = 1
 
 def rect(x,y):	
 	nx = x - sqhw
@@ -60,10 +80,10 @@ def firstLast(t):
 	return (first, last)
 
 def getPath(x, y):
-	(xs, ys) = sample(10, x, y)
+	(xs, ys) = sample(nsamples, x, y)
 	ts = makeT(xs, ys)
-	splinexs = UnivariateSpline(ts, xs, s=1) 
-	splineys = UnivariateSpline(ts, ys, s=1)
+	splinexs = UnivariateSpline(ts, xs, s=sfact) 
+	splineys = UnivariateSpline(ts, ys, s=sfact)
 	(first, last) = firstLast(ts)
 	nts = linspace(first, last, grain)
 	nxs = splinexs(nts)
@@ -73,8 +93,8 @@ def getPath(x, y):
 def main():
 	root.wm_title("Interpolation test")
 	canvas.pack()
-	fx = 30
-	fy = 30
+	fx = initX
+	fy = initY
 	point = circ(fx, fy)
 	while 1:
 		(xs, ys) = getPath(fx, fy)
