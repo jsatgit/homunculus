@@ -4,7 +4,6 @@ import random
 from scipy import stats
 import numpy
 from creature import *
-import threading
 
 class CreatureSelection:
 	def __init__(self, master):
@@ -17,7 +16,7 @@ class CreatureSelection:
 							 text=l[i].name, 
 							 variable=self.cur, 
 							 value=i)
-			r.pack(anchor=W)
+			r.pack()
 
 class Graphics:
 	def __init__(self, 	
@@ -28,7 +27,6 @@ class Graphics:
 		maxApart  = 50):	
 
 		self.root = Tk()
-		self.root.wm_title("Homunculus")
 		self.height = winHeight 
 		self.width = winWidth
 		self.sqW = creatSize
@@ -40,17 +38,11 @@ class Graphics:
 		self.tickTime = tickTime
 		self.maxApart = maxApart
 		self.running = 1
-		
-		self.opt = Toplevel(self.root, width=60)
-		self.opt.title("Options")
-		self.creatureSelection = CreatureSelection(self.opt)
-		
-		t = threading.Thread(target=self.options)
-		t.start()
+		self.creatureSelection = CreatureSelection(self.root)
 
-	def options(self):
-		self.opt.mainloop()
-
+	top = Toplevel()
+	top.mainloop()
+		
 	def start(self):
 		self.root.protocol("WM_DELETE_WINDOW", self.__onClose)
 		self.canvas.bind("<Button-1>", self.__onClick)
